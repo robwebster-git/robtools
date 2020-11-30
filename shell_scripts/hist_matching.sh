@@ -30,6 +30,6 @@ do
    fn=$(basename $f)
    fn2=${fn/$reference_year/$target_year}
    NewYearFile="/home/nx06/nx06/shared/RF/S2AWS/${aoi}${target_year}_${tile}/Fmask_Fourier/${fn2}"
-   CorrNewYearFile="/home/nx06/nx06/shared/RF/S2AWS/${aoi}${target_year}_${tile}/Fmask_Fourier/hist_matched_{fn2}"
+   CorrNewYearFile="/home/nx06/nx06/shared/RF/S2AWS/${aoi}${target_year}_${tile}/Fmask_Fourier/hist_matched_${fn2}"
    Histogram $NewYearFile NewHistogram.txt RefHistogram.txt $CorrNewYearFile
 done < $1
