@@ -8,6 +8,7 @@ from rasterio.warp import calculate_default_transform, reproject, Resampling
 
 
 def resample_raster_10(file_name, outfile = None):
+    print(f'Processing : {file_name}')
     with rio.open(file_name) as src:
         dst_crs = src.crs['init']
         data_type = src.meta['dtype']
@@ -215,7 +216,7 @@ def tasseled_cap_tm(rast, reflectance=True):
     return reshaped.round().astype(np.int32)
 
 
-def normalised_tasselled_cap_components(s2_stack, nodata=-9999):
+def calc_tc_components(s2_stack, nodata=-9999):
     '''
     Calculates the first three components of the tasselled cap transformed
     input data - this is expected to be
@@ -240,9 +241,15 @@ def normalised_tasselled_cap_components(s2_stack, nodata=-9999):
     
     h, v, l = stack
 
+    print('Before reshaping')
+    print(h.shape, v.shape, l.shape)
+
     h = h.reshape((1, shp[1], shp[2]))
     v = v.reshape((1, shp[1], shp[2]))
     l = l.reshape((1, shp[1], shp[2]))
+
+    print('After reshaping')
+    print(h.shape, v.shape, l.shape)
 
     return h, v, l
 
@@ -254,9 +261,8 @@ def open_bands(s2_dir, write_resampled = False):
     # - Rescale S2 data and calulate indices from floats
     #scale2reflect = np.float32(0.0001)
     scale2reflect = 1
-    
     # 10m bands
-    path_10 = s2_dir + '/R10m/'
+    path_10 = s2_dir
     band2_10m = rio.open(glob(path_10 + '/*B02*')[0])
     b2_10m = band2_10m.read(1, masked = True) * scale2reflect
     band3_10m = rio.open(glob(path_10 + '/*B03*')[0])
@@ -265,20 +271,19 @@ def open_bands(s2_dir, write_resampled = False):
     b4_10m = band4_10m.read(1, masked = True) * scale2reflect
     band8_10m = rio.open(glob(path_10 + '/*B08*')[0])
     b8_10m = band8_10m.read(1, masked = True) * scale2reflect
-    
     # 20m bands resampled
-    path_20 = s2_dir + '/R20m/'    
+    path_20 = s2_dir    
     b5_10m = resample_raster_10(glob(path_20 + '/*B05*')[0]) * scale2reflect
     b6_10m = resample_raster_10(glob(path_20 + '/*B06*')[0]) * scale2reflect
     b7_10m = resample_raster_10(glob(path_20 + '/*B07*')[0]) * scale2reflect
     b11_10m = resample_raster_10(glob(path_20 + '/*B11*')[0]) * scale2reflect
     b12_10m = resample_raster_10(glob(path_20 + '/*B12*')[0]) * scale2reflect
     b8a_10m = resample_raster_10(glob(path_20 + '/*B8A*')[0]) * scale2reflect
-    
     # 60m bands resampled
-    path_60 = s2_dir + '/R60m/'    
+    path_60 = s2_dir    
     b1_10m = resample_raster_10(glob(path_60 + '/*B01*')[0]) * scale2reflect
     b9_10m = resample_raster_10(glob(path_60 + '/*B09*')[0]) * scale2reflect
+    #b10_10m = resample_raster_10(glob(path_60 + '/*B10*')[0]) * scale2reflect
 
 
     return b1_10m, b2_10m, b3_10m, b4_10m, b5_10m, b6_10m, b7_10m, b8_10m, b9_10m, b11_10m, b12_10m, b8a_10m
@@ -286,41 +291,39 @@ def open_bands(s2_dir, write_resampled = False):
 @click.command()
 @click.argument('s2_dir', type=click.Path())
 def main(s2_dir):
-
-    print(f'Processing from : {s2_dir}')
-    
-    s2fm_dir = s2_dir + '/S2Fmask'
+    print('hello')
+    print(s2_dir)
     scene_id = os.path.basename(s2_dir)
     year = scene_id[11:15]
     tile_id = scene_id[39:44]
-    
     path = '/'.join(s2_dir.split('/')[:-2])
     outpath = os.path.join(s2_dir, 'indices')
-    
     if not os.path.exists(outpath):
         os.makedirs(outpath)
 
-    # Load each of the Sentinel 2 bands into arrays, including resampling the 20m and 60m bands to 10m
-    b1_10m, b2_10m, b3_10m, b4_10m, b5_10m, b6_10m, b7_10m, b8_10m, b9_10m, b11_10m, b12_10m, b8a_10m = open_bands(s2fm_dir)
+    b1_10m, b2_10m, b3_10m, b4_10m, b5_10m, b6_10m, b7_10m, b8_10m, b9_10m, b11_10m, b12_10m, b8a_10m = open_bands(s2_dir)
 
-    # Path to file above is a path to any 10m band, allows function to aquire correct meta data. 
+    #path to band is a path to any 10m band, allows function to aquire correct meta data. 
     band_meta_data = glob(s2fm_dir + '/R10m/*B04*')[0]
     
-    # Open the band_meta_data and get a profile from it
     with rio.open(band_meta_data) as src:
         profile = src.profile.copy()
     
     aoi_name = rio.open(band_meta_data).name
     tile_date = scene_id.replace('.SAFE', '')
+    #calculate indices
     outpath = outpath + f'/{tile_date}'
+    print(outpath)
 
-    # Create a stacked numpy array to feed to the tasselled cap processing function
     s2_stack = np.stack([b1_10m, b2_10m, b3_10m, b4_10m, b5_10m, b6_10m, b7_10m, b8_10m, b9_10m, b11_10m, b12_10m, b8a_10m])
 
     s2_band_sums = s2_stack.sum(axis=0)
     mask_areas = (s2_band_sums / 12).astype(np.int16) == int(profile['nodata'])
     #mask_areas = b1_10m == profile['nodata']
     mask_3d = np.repeat(mask_areas[np.newaxis, :, :], 3, axis=0)
+
+    print(mask_areas.shape)
+    print(mask_3d.shape)
 
     profile['dtype'] = 'float32'
     profile['count'] = 1
@@ -329,7 +332,7 @@ def main(s2_dir):
 
     tc_masked = np.ma.MaskedArray(tc_transformed, mask=mask_3d, fill_value=profile['nodata'])
 
-    tc1, tc2, tc3 = normalised_tasselled_cap_components(tc_transformed)
+    tc1, tc2, tc3 = calc_tc_components(tc_transformed)
 
     bands_dict = { 1: 'brightness', 2 : 'greeness', 3 : 'wetness'}
 
