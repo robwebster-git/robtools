@@ -6,7 +6,7 @@ import click
 import subprocess
 
 @click.command()
-@click.argument('aoi', help='AOI Name code e.g. FC_CL or Sask_FN etc')
+@click.argument('aoi')
 @click.option('--years', default=[2020], type=click.Path(exists=True), help="")
 @click.option('--months',default=[1,2,3,4,5,6,7,8,9,10,11,12] , type=list, help="")
 def main(aoi, years, months):
