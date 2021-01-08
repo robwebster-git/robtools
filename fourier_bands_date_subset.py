@@ -17,6 +17,8 @@ def main(project, tiles, years, months, indices):
         reader = csv.reader(f)
         indices_list = list(reader)
 
+    print(indices)
+
     tiles = tiles.split(',')
 
     for tile in tiles:
