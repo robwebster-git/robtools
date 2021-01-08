@@ -7,8 +7,8 @@ import subprocess
 
 @click.command()
 @click.argument('aoi')
-@click.option('--years', default=[2020], type=click.Path(exists=True), help="")
-@click.option('--months',default=[1,2,3,4,5,6,7,8,9,10,11,12] , type=list, help="")
+@click.option('--years', default=[2020], type=list, help="years to include")
+@click.option('--months',default=[1,2,3,4,5,6,7,8,9,10,11,12] , type=list, help="months to include")
 def main(aoi, years, months):
 
     start = f'{years.min()}{months.min()}01'
