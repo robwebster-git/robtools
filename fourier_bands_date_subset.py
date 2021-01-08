@@ -12,7 +12,7 @@ import subprocess
 @click.option('--months',default='1,2,3,4,5,6,7,8,9,10,11,12' , type=click.STRING, help="months to include, comma separated eg 3,4,5,6,7,8,")
 @click.option('--indices', type=click.Path(exists=True), default='/home/nx06/nx06/shared/RF/S2AWS/indices_to_process.csv', help='CSV of indices to process')
 @click.option('--suffix', default='', type=click.STRING, help='A suffix to add to to the end of the bands and indices files so as to keep them separate.  Default is no suffix')
-@click.option('--collate_all_files', default=True, is_flag=True, help='If set, create a single text file with all files to process')
+@click.option('--collate_all_files', is_flag=True, help='If set, create a single text file with all files to process')
 def main(project, tiles, years, months, indices, suffix, collate_all_files):
 
     with open(indices, newline='\n') as f:
