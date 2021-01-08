@@ -70,7 +70,11 @@ def main(project, tiles, years, months, indices, suffix, collate_all_files):
 
         
         if collate_all_files:
+            
+            subprocess.run(f"mkdir /home/nx06/nx06/shared/RF/Projects/{project}/file_lists/", shell=True)
+            
             fourier_files_path=f"/home/nx06/nx06/shared/RF/Projects/{project}/file_lists/{project}_Fourier_Files{suffix}.txt"
+            
             subprocess.run(f"ls -1 {os.environ['MAINDIR']}/S2AWS/{project}_?????/Fourier_Files*{suffix}.txt > {fourier_files_path}", shell=True)
 
 if __name__ == "__main__":
