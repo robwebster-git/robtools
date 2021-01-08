@@ -7,18 +7,21 @@ import subprocess
 
 @click.command()
 @click.argument('aoi')
-@click.option('--years', default=[2020], type=list, help="years to include")
-@click.option('--months',default=[1,2,3,4,5,6,7,8,9,10,11,12] , type=list, help="months to include")
+@click.option('--years', default='2020', type=click.STRING, help="years to include")
+@click.option('--months',default='1,2,3,4,5,6,7,8,9,10,11,12' , type=click.STRING, help="months to include")
 def main(aoi, years, months):
 
-    years = sorted(years)
-    months = sorted(months)
+    years = years.split(',')
+    months = months.split(',')
 
-    years = [str(year) for year in years]
-    months = [str(month) for month in months]
+    #years = [str(year) for year in years]
+    #months = [str(month) for month in months]
 
     months = [month.zfill(2) for month in months]
 
+    print(years)
+    print(months)
+    
     for resolution in [10, 20, 60]:
 
         bands = []
@@ -39,7 +42,7 @@ def main(aoi, years, months):
                 for month in months:
                     p = subprocess.run(f"ls {os.environ['MAINDIR']}/S2AWS/{aoi}/SAFE/*L2A_{year}{month}*/S2Fmask/R{resolution}m/*{band}*.tif >> {os.environ['MAINDIR']}/S2AWS/{aoi}/Fourier_Files_{band}.txt", shell=True)
 
-
+    
 
     
 
