@@ -11,10 +11,13 @@ import subprocess
 @click.option('--months',default=[1,2,3,4,5,6,7,8,9,10,11,12] , type=list, help="months to include")
 def main(aoi, years, months):
 
-    start = f'{min(years)}{min(months)}01'
-    end = f'{max(years)}{max(months)}01' 
+    years = sorted(years)
+    months = sorted(months)
 
-    print(start, end)
+    years = [str(year) for year in years]
+    months = [str(month) for month in months]
+
+    months = [month.zfill(2) for month in months]
 
     for resolution in [10, 20, 60]:
 
@@ -30,11 +33,11 @@ def main(aoi, years, months):
 
         for band in bands:
 
-            p = subprocess.run(f"touch {os.environ['MAINDIR']}/S2AWS/{aoi}/Fourier_Files_{band}.txt")
+            p = subprocess.run(f"touch {os.environ['MAINDIR']}/S2AWS/{aoi}/Fourier_Files_{band}.txt", shell=True)
 
             for year in years:
                 for month in months:
-                    p = subprocess.run(f"ls {os.environ['MAINDIR']}/S2AWS/{aoi}/SAFE/*L2A_{year}{month}*/S2Fmask/R{resolution}m/*{band}*.tif >> {os.environ['MAINDIR']}/S2AWS/{aoi}/Fourier_Files_{band}.txt")
+                    p = subprocess.run(f"ls {os.environ['MAINDIR']}/S2AWS/{aoi}/SAFE/*L2A_{year}{month}*/S2Fmask/R{resolution}m/*{band}*.tif >> {os.environ['MAINDIR']}/S2AWS/{aoi}/Fourier_Files_{band}.txt", shell=True)
 
 
 
