@@ -13,9 +13,10 @@ import subprocess
 @click.option('--indices', type=click.Path(exists=True), default='/home/nx06/nx06/shared/RF/S2AWS/indices_to_process.csv', help='CSV of indices to process')
 def main(project, tiles, years, months, indices):
 
-    with open(indices, newline='') as f:
+    with open(indices, newline='\n') as f:
         reader = csv.reader(f)
         indices_list = list(reader)
+        indices_list = [i[0] for i in indices_list]
 
     print(indices_list)
 
