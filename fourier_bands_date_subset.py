@@ -11,8 +11,8 @@ import subprocess
 @click.option('--months',default=[1,2,3,4,5,6,7,8,9,10,11,12] , type=list, help="months to include")
 def main(aoi, years, months):
 
-    start = f'{years.min()}{months.min()}01'
-    end = f'{years.min()}{months.max()}01' 
+    start = f'{min(years)}{min(months)}01'
+    end = f'{max(years)}{max(months)}01' 
 
     print(start, end)
 
