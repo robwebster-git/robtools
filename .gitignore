@@ -1,0 +1,7 @@
+*.tif
+*.pyc
+*.geojson
+*.ini
+*.doc
+*.gpkg
+shrink_geojson
